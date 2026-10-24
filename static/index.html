@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoBuddy Pro V2 — Voice-First AI Spatial Perception Platform</title>
+    
+    <!-- TensorFlow.js & COCO-SSD Real-Time Client Vision Models -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Accessibility Skip Link for Keyboard & Screen Reader Users -->
+    <a href="#voice-hero-section" class="skip-link">Skip directly to Voice Assistant controls</a>
+
+    <!-- Screen Reader Live Announcement Regions -->
+    <div id="sr-announcements" class="sr-only" aria-live="assertive" role="status" aria-atomic="true"></div>
+    <div id="sr-guidance" class="sr-only" aria-live="polite" role="status" aria-atomic="false"></div>
+
+    <header class="app-header" role="banner">
+        <div class="logo-group">
+            <div class="radar-pulse-icon" aria-hidden="true"></div>
+            <div>
+                <h1>EchoBuddy <span class="badge-tag">PRO V2</span></h1>
+                <p class="subtitle">Voice-First AI Spatial Perception & Accessibility Assistant</p>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="status-badge" id="ai-vision-status" role="status" aria-label="AI Vision Engine Status">
+                <span class="status-dot pulsing"></span> AI Vision: Loading Model...
+            </div>
+            
+            <!-- Quick Accessibility Toggles -->
+            <button class="btn-accessibility-toggle" id="btn-toggle-contrast" aria-label="Toggle High Contrast Mode (Shortcut: C)" title="High Contrast Mode [C]">
+                🎨 Contrast: Normal
+            </button>
+            <button class="btn-accessibility-toggle" id="btn-toggle-language" aria-label="Toggle Language English or Hindi (Shortcut: L)" title="Switch Language [L]">
+                🌐 Language: EN
+            </button>
+
+            <a href="/static/presentation.html" target="_blank" class="btn" style="text-decoration:none; background:rgba(168,85,247,0.25); border:1px solid #a855f7; color:#c084fc; font-weight:700;">📊 Pitch Deck</a>
+            <button class="btn btn-voice-master" id="btn-toggle-voice-agent" aria-label="Toggle Voice Control">🎙️ Voice Agent: ACTIVE</button>
+        </div>
+    </header>
+
+    <main class="main-container" id="main-content" role="main">
+        <!-- Voice-First Hero Interface (V2 Core) -->
+        <section class="voice-hero-card" id="voice-hero-section" aria-labelledby="voice-hero-title">
+            <div class="voice-hero-header">
+                <div class="voice-hero-title-group">
+                    <h2 id="voice-hero-title">
+                        <span>🎙️ Voice Accessibility Assistant</span>
+                        <span class="voice-badge" id="lang-indicator-badge">English &amp; हिन्दी</span>
+                    </h2>
+                </div>
+                <div class="voice-hero-controls">
+                    <button class="btn-accessibility-toggle" id="btn-toggle-text-size" aria-label="Toggle Font Size">
+                        🔍 Text Size
+                    </button>
+                </div>
+            </div>
+
+            <!-- Large Accessible Microphone Hero Button -->
+            <div class="mic-hero-wrapper">
+                <button class="btn-mic-hero" id="btn-mic-hero" role="button" aria-pressed="false" aria-label="Microphone Button. Click or press Spacebar to speak command">
+                    <div class="mic-hero-icon" aria-hidden="true">🎙️</div>
+                    <div class="mic-hero-content">
+                        <span class="mic-hero-headline" id="mic-status-headline">Press Spacebar or Click to Speak</span>
+                        <span class="mic-hero-subtext" id="mic-status-subtext">Supports "What do you see?", "Help", "Repeat that", and "Stop speaking"</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Fast Action Voice Buttons (High Contrast & Blind Friendly) -->
+            <div class="voice-action-grid" role="group" aria-label="Quick Voice Commands">
+                <button class="btn-voice-action" id="btn-cmd-see" aria-label="Scan room and ask What do you see. Keyboard shortcut: S">
+                    <span class="action-label">👁️ What do you see?</span>
+                    <kbd>S</kbd>
+                </button>
+                <button class="btn-voice-action" id="btn-cmd-memory" aria-label="Describe surroundings using Scene Memory. Keyboard shortcut: D">
+                    <span class="action-label">🧠 Describe Surroundings</span>
+                    <kbd>D</kbd>
+                </button>
+                <button class="btn-voice-action" id="btn-cmd-clear-mem" aria-label="Clear scene memory. Keyboard shortcut: X">
+                    <span class="action-label">🧹 Clear Memory</span>
+                    <kbd>X</kbd>
+                </button>
+                <button class="btn-voice-action" id="btn-cmd-help" aria-label="Speak voice commands and instructions. Keyboard shortcut: H">
+                    <span class="action-label">❓ Help &amp; Commands</span>
+                    <kbd>H</kbd>
+                </button>
+                <button class="btn-voice-action" id="btn-cmd-repeat" aria-label="Repeat last spoken announcement. Keyboard shortcut: R">
+                    <span class="action-label">🔄 Repeat that</span>
+                    <kbd>R</kbd>
+                </button>
+                <button class="btn-voice-action btn-action-stop" id="btn-cmd-stop" aria-label="Stop speech synthesis immediately. Keyboard shortcut: Escape">
+                    <span class="action-label">⏹️ Stop speaking</span>
+                    <kbd>Esc</kbd>
+                </button>
+            </div>
+
+            <!-- Smart Object Finder Active Bar -->
+            <div class="finder-status-bar hidden" id="finder-status-bar" role="region" aria-label="Active Object Search">
+                <div class="finder-status-info">
+                    <span class="finder-pulse-dot" aria-hidden="true"></span>
+                    <span class="finder-text" id="finder-status-text">🔍 Searching for target...</span>
+                </div>
+                <button class="btn btn-cancel-finder" id="btn-cancel-finder" aria-label="Cancel active object search">
+                    ❌ Cancel Search
+                </button>
+            </div>
+
+            <!-- Microphone Feedback & Error Banner -->
+            <div class="mic-feedback-banner hidden" id="mic-feedback-banner" role="alert" aria-live="assertive">
+                <span id="mic-feedback-text">Microphone status feedback</span>
+                <button class="btn-banner-dismiss" id="btn-banner-dismiss" aria-label="Dismiss message">Dismiss</button>
+            </div>
+
+            <!-- Spoken Speech Announcement Box -->
+            <div class="narration-display-card" role="region" aria-label="Voice Narration Stream">
+                <div class="narration-icon" aria-hidden="true">🗣️</div>
+                <div class="narration-body">
+                    <div class="narration-meta">
+                        <span id="speech-mode-tag">VOICE OUTPUT (SYNTHESIS ACTIVE)</span>
+                        <span id="speech-lang-code">LANG: EN</span>
+                    </div>
+                    <p class="narration-live-text" id="speech-log">"EchoBuddy Pro V2 ready. Press Spacebar or speak a command."</p>
+                </div>
+            </div>
+
+            <!-- Smart Scene Memory State Display -->
+            <div class="scene-memory-card" id="scene-memory-card" role="region" aria-label="Scene Memory State">
+                <div class="memory-card-header">
+                    <span class="memory-title">🧠 Smart Scene Memory (Confirmed Surroundings):</span>
+                    <span class="memory-disclaimer-pill">⚠️ Assistive only • Not a safety walking system</span>
+                </div>
+                <ul class="memory-items-list" id="memory-items-list">
+                    <li class="memory-empty">Scene memory is initializing... Point camera to observe surroundings.</li>
+                </ul>
+            </div>
+
+            <!-- Keyboard Shortcuts Cheat Bar -->
+            <div class="shortcuts-bar" aria-label="Keyboard Shortcuts">
+                <span class="title">⌨️ Keyboard Shortcuts:</span>
+                <span><kbd>Space</kbd> or <kbd>V</kbd> Speak</span>
+                <span><kbd>S</kbd> What do you see?</span>
+                <span><kbd>D</kbd> Surroundings</span>
+                <span><kbd>X</kbd> Clear Memory</span>
+                <span><kbd>R</kbd> Repeat</span>
+                <span><kbd>Esc</kbd> Stop voice</span>
+                <span><kbd>H</kbd> Help</span>
+                <span><kbd>M</kbd> Mute/Sonar</span>
+                <span><kbd>L</kbd> Switch EN/HI</span>
+                <span><kbd>C</kbd> Contrast</span>
+            </div>
+        </section>
+
+        <!-- Search Bar & Object Lock Controls -->
+        <section class="search-bar-card" aria-labelledby="target-section-title">
+            <div class="search-input-group">
+                <label for="custom-target-input" id="target-section-title">🎯 Target Object:</label>
+                <input type="text" id="custom-target-input" placeholder="Say or type target object (e.g., bottle, phone, laptop, keys, cup, chair)..." value="bottle" aria-label="Target object name">
+                <button class="btn btn-search" id="btn-set-target" aria-label="Lock Target Object">Lock Target</button>
+                <button class="btn btn-mic" id="btn-voice-command" aria-label="Speak target object name">🎙️ Speak Target</button>
+            </div>
+            
+            <div class="quick-tags" role="group" aria-label="Frequently tracked objects">
+                <span class="tag-label">Frequently Used:</span>
+                <button class="tag-btn" onclick="setTarget('bottle')">🍼 Bottle</button>
+                <button class="tag-btn" onclick="setTarget('cell phone')">📱 Mobile Phone</button>
+                <button class="tag-btn" onclick="setTarget('laptop')">💻 Laptop</button>
+                <button class="tag-btn" onclick="setTarget('cup')">☕ Cup / Mug</button>
+                <button class="tag-btn" onclick="setTarget('keys')">🔑 Keys</button>
+                <button class="tag-btn" onclick="setTarget('chair')">🪑 Chair</button>
+                <button class="tag-btn" onclick="setTarget('backpack')">🎒 Backpack</button>
+                <button class="tag-btn" onclick="setTarget('glasses')">👓 Glasses</button>
+            </div>
+        </section>
+
+        <!-- Mode & Audio Master Control Bar -->
+        <section class="control-bar" aria-label="Perception and Mode Controls">
+            <div class="mode-selector" role="tablist">
+                <button class="btn btn-mode active" id="btn-mode-cam" role="tab" aria-selected="true">📷 Real-Time Camera AI Vision</button>
+                <button class="btn btn-mode" id="btn-mode-sim" role="tab" aria-selected="false">🎯 3D Interactive Simulator</button>
+                <button class="btn btn-mode" id="btn-mode-api" role="tab" aria-selected="false">⚡ Developer API</button>
+            </div>
+            
+            <div class="audio-master-control">
+                <button class="btn btn-primary" id="btn-toggle-audio" aria-label="Toggle Spatial Sonar Audio">🔊 Spatial Sonar Audio: ON</button>
+                <button class="btn btn-speech" id="btn-toggle-speech" aria-label="Toggle Voice Speech Guidance">🗣️ Voice Speech Guidance: ON</button>
+                <button class="btn btn-haptic" id="btn-toggle-haptics" aria-label="Toggle Haptic Pulses">📳 Haptic Pulses: ON</button>
+            </div>
+        </section>
+
+        <!-- Main Viewport Grid -->
+        <section class="viewport-grid">
+            <!-- Camera & Detection Canvas Viewport -->
+            <div class="canvas-card">
+                <div class="canvas-header">
+                    <span class="card-title" id="view-title">Real-Time Optical Depth &amp; Object Localization</span>
+                    <span class="hint-tag" id="camera-fps-tag">30 FPS • WebGL Accelerated</span>
+                </div>
+                
+                <div class="canvas-wrapper">
+                    <!-- Live Camera Feed Video -->
+                    <video id="webcam-video" autoplay playsinline muted aria-hidden="true"></video>
+
+                    <!-- Real-Time AI Detection Overlay Canvas -->
+                    <canvas id="detection-canvas" width="640" height="480" aria-label="Camera object detection feed"></canvas>
+
+                    <!-- Interactive Canvas for Simulation Mode -->
+                    <canvas id="sonar-canvas" width="640" height="480" class="hidden" aria-label="Sonar simulation feed"></canvas>
+
+                    <!-- Lock Overlay -->
+                    <div id="lock-overlay" class="lock-overlay hidden" role="alert">
+                        <div class="lock-box">
+                            <span class="lock-icon" aria-hidden="true">🔒</span>
+                            <span class="lock-text">TARGET LOCKED — REACH DIRECTLY AHEAD</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guidance Verbal Banner -->
+                <div class="guidance-banner" id="guidance-banner" role="status">
+                    🔊 Point camera towards room to detect objects in real time.
+                </div>
+            </div>
+
+            <!-- Real-Time Telemetry & Spatial Perception Side Panel -->
+            <div class="telemetry-card" role="region" aria-label="Spatial Telemetry Information">
+                <h2 class="card-title">Spatial Telemetry &amp; Perception</h2>
+
+                <!-- Real-Time Detected Objects Radar List -->
+                <div class="detected-list-card">
+                    <span class="list-title">👁️ Objects Currently Visible:</span>
+                    <ul class="detected-items" id="detected-objects-list" aria-live="polite">
+                        <li class="empty-item">Scanning camera feed...</li>
+                    </ul>
+                </div>
+
+                <div class="telemetry-metrics">
+                    <div class="metric-box">
+                        <span class="metric-label">Stereo Spatial Panning (Left / Right)</span>
+                        <span class="metric-value" id="val-pan">0.00</span>
+                        <div class="meter-bar"><div class="meter-fill" id="meter-pan" style="width: 50%;"></div></div>
+                    </div>
+
+                    <div class="metric-box">
+                        <span class="metric-label">Calculated Real Distance (Depth)</span>
+                        <span class="metric-value highlight" id="val-dist">1.20 m (3.9 ft)</span>
+                        <div class="meter-bar"><div class="meter-fill highlight" id="meter-dist" style="width: 60%;"></div></div>
+                    </div>
+
+                    <div class="metric-box">
+                        <span class="metric-label">Target Alignment Lock</span>
+                        <span class="metric-value highlight" id="val-prox">45.0%</span>
+                        <div class="meter-bar"><div class="meter-fill highlight" id="meter-prox" style="width: 45%;"></div></div>
+                    </div>
+                </div>
+
+                <div class="spatial-coords-box">
+                    <h3>3D Spatial Vector:</h3>
+                    <p class="code-line">dx: <span id="val-dx">0.00</span> | dy: <span id="val-dy">0.00</span> | dz: <span id="val-dz">1.20m</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Playground & Integration Section -->
+        <section class="api-section hidden" id="api-playground-section" aria-label="API Documentation">
+            <h2 class="section-title">Developer REST &amp; WebSocket API Docs</h2>
+            <div class="api-grid">
+                <div class="api-card">
+                    <h3>1. POST /api/v1/sonify</h3>
+                    <p class="api-desc">Converts raw 3D relative coordinates (dx, dy, dz) into real-time audio parameters.</p>
+                    <pre class="code-block">curl -X POST "http://localhost:8000/api/v1/sonify" \
+  -H "Content-Type: application/json" \
+  -d '{"dx": -0.35, "dy": 0.50, "dz": 0.85, "target_name": "bottle"}'</pre>
+                </div>
+
+                <div class="api-card">
+                    <h3>2. POST /api/v1/scene-describe</h3>
+                    <p class="api-desc">Generates complete verbal scene narration for blind users from detected items list in English or Hindi.</p>
+                    <pre class="code-block">curl -X POST "http://localhost:8000/api/v1/scene-describe" \
+  -H "Content-Type: application/json" \
+  -d '{"objects": [{"label": "bottle", "distance_m": 0.8, "position": "left"}], "lang": "en"}'</pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer" role="contentinfo">
+        <p>EchoBuddy Pro V2 • Voice-First AI Spatial Perception &amp; Hands-Free Navigation Platform for Visually Impaired</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
